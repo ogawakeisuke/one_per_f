@@ -23,10 +23,8 @@ RubyAudio::Sound.open(fname) do |snd|
 end
 
 
-p results
-
 p (results.inject { |sum, x| sum += x } / results.size)
 
 
 
-# -1.0に近づけば高評価
+# -1.0に近づけば高評価、だと思う
