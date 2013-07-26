@@ -4,7 +4,7 @@ require "fftw3"
 require 'cairo'
 
 
-fname = "noise.wav"
+fname = ARGV[0] || STDIN.gets.strip
 window_size = 1024
 
 #

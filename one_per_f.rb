@@ -4,8 +4,7 @@ require "fftw3"
 require './regression_line'
 
 
-
-fname = "pinknoise.aif"
+fname = ARGV[0] || STDIN.gets.strip
 window_size = 1024
 results = Array.new
 
