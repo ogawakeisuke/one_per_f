@@ -5,27 +5,25 @@ require 'cairo'
 # require './fft_scratch'
 
 
-fname = ARGV[0] || STDIN.gets.strip
+
 window_size = 1024
 
-#
-# 512個の空の配列が造られる
-#
-fft = Array.new(window_size / 2).collect { Array.new }
 
-buf = RubyAudio::Buffer.float(window_size)
-
-RubyAudio::Sound.open(fname) do |snd|
-  
-  while snd.read(buf) != 0
-    na = NArray.to_na(buf.to_a)
-
-    fft_slice = FFTW3.fft(na).to_a[0, window_size / 2]
-    fft_slice.each_with_index do |complex, i| 
-      fft[i] << complex
-    end
+def sample_wave(rate = 1024)
+  arr = (0...rate).map do |n|
+    Math.sin(2 * 2 * Math::PI * n / rate) * 2
+    # v + Math.cos(4 * 2 * Math::PI * n / rate) #　加算合成してる
   end
+  return arr
 end
+
+# fftスライスのサイズの2倍分の配列数が必要
+target_array = Array.new(window_size).collect.with_index {|a, i| a = Math.sin(i) }
+
+p sample_wave
+na = NArray.to_na(target_array)
+
+fft_slice = FFTW3.fft(na).to_a[0, window_size / 2]
 
 
 
@@ -69,9 +67,9 @@ end
 # 描画空間
 #
 format = Cairo::FORMAT_ARGB32
-width = 3000
-height = 600
-radius = 10 # 半径
+width = 1024
+height = 512
+radius = 5 # 半径
 
 surface = Cairo::ImageSurface.new(format, width, height)
 context = Cairo::Context.new(surface)
@@ -81,13 +79,11 @@ context.set_source_rgb(1, 1, 1) # 白
 context.rectangle(0, 0, width, height)
 context.fill
 
-fft.each_with_index do |compleces, i|
-  ret_scale_rows(compleces).each_with_index do |val, j|
-    context.set_source_rgb(val, 0, 0)
-    context.arc(j*10, i, radius, 0, 10 * Math::PI)
-    context.fill
-  end
+fft_slice.each_with_index do |complex, i|
+  context.set_source_rgb(255, 0, 0)
+  context.arc(i * 2, amp(complex).scale_between, radius, 0, 10 * Math::PI)
+  context.fill
 end
 
-surface.write_to_png("sonogram.png")
+surface.write_to_png("spectologram.png")
 
