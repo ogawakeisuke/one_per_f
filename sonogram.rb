@@ -1,7 +1,8 @@
 require "ruby-audio"
 require "narray"
-require "fftw3"
+# require "fftw3"
 require 'cairo'
+require './fft_scratch'
 
 
 fname = ARGV[0] || STDIN.gets.strip
@@ -19,7 +20,7 @@ RubyAudio::Sound.open(fname) do |snd|
   while snd.read(buf) != 0
     na = NArray.to_na(buf.to_a)
 
-    fft_slice = FFTW3.fft(na, -1).to_a[0, window_size / 2]
+    fft_slice = FFTScratch.fft(na).to_a[0, window_size / 2]
     fft_slice.each_with_index do |complex, i| 
       fft[i] << complex
     end
